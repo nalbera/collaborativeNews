@@ -18,6 +18,7 @@ dotenvConfig({ path: '.env.development' });
       password: process.env.DB_PASSWORD,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      dropSchema: false,
     }),
     UserModule,
     NewsModule,
