@@ -19,6 +19,9 @@ export class User {
   @Column({ length: 50, unique: true })
   email: string;
 
+  @Column({ length: 100 })
+  password: string;
+
   @Column({ length: 50, default: null, nullable: true })
   firstName: string;
 
@@ -26,7 +29,7 @@ export class User {
   lastName: string;
 
   @Column({ length: 250, default: null, nullable: true })
-  biographi: string;
+  biography: string;
 
   @Column({ length: 50, default: null, nullable: true })
   avatar: string;
