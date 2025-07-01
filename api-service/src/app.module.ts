@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config as dotenvConfig } from 'dotenv';
+import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './modules/user/user.module';
 import { NewsModule } from './modules/news/news.module';
 import { VotesModule } from './modules/votes/votes.module';
@@ -19,6 +20,11 @@ dotenvConfig({ path: '.env.development' });
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
       dropSchema: false,
+    }),
+    JwtModule.register({
+      global: true,
+      signOptions: { expiresIn: '1d' },
+      secret: process.env.JWT_SECRET,
     }),
     UserModule,
     NewsModule,
