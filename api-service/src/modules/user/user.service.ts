@@ -1,16 +1,22 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as randomString from 'randomstring';
+import { config as dotenvConfig } from 'dotenv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
 import { UserDto } from './dto/user-dto.dto';
+import { MailService } from '../mail/mail.service';
+
+dotenvConfig({ path: '.env.development' });
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   async createUser(user: UserDto): Promise<User> {
@@ -30,8 +36,17 @@ export class UserService {
       const newUser = new User();
       newUser.email = user.email;
       newUser.password = encryptedPassword;
+      newUser.registrationCode = randomString.generate(10);
 
       await this.userRepository.save(newUser);
+
+      await this.mailService.sendMail(
+        user.email,
+        'Welcome to The Colavoravie News',
+        newUser.registrationCode,
+        process.env.URL_REGISTRATION_CONFIRM || '',
+      );
+
       return newUser;
     } catch (error: unknown) {
       let errorMessage = 'An error occurred';
