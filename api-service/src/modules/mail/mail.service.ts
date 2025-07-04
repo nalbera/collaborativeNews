@@ -10,14 +10,14 @@ export class MailService {
       await this.mailService.sendMail({
         to,
         subject,
-        template: './welcome',
+        template: './validate',
         context: {
           registrationCode: regCode,
           url,
         },
       });
     } catch (error) {
-      console.log('Error al enviar correo', error);
+      console.log('Error sending email', error);
     }
   }
 }
