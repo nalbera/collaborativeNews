@@ -40,19 +40,20 @@ export class UserService {
 
       await this.userRepository.save(newUser);
 
-      const mailBody = `
-        <h2>Welcome to The Colavoravie News</h2>
-        <p>
-          Confirm your account in collaborative news by entering the following link and enter the following confirmation code <br>
-          Code: ${newUser.registrationCode}
-          Link: ${process.env.URL_REGISTRATION_CONFIRM}
-        </p>
-      `;
+      // const mailBody = `
+      //   <h2>Welcome to The Colavoravie News</h2>
+      //   <p>
+      //     Confirm your account in collaborative news by entering the following link and enter the following confirmation code <br>
+      //     Code: ${newUser.registrationCode}
+      //     Link: ${process.env.URL_REGISTRATION_CONFIRM}
+      //   </p>
+      // `;
 
       await this.mailService.sendMail(
         user.email,
         'Welcome to The Colavoravie News',
-        mailBody,
+        newUser.registrationCode,
+        process.env.URL_REGISTRATION_CONFIRM || '',
       );
 
       return newUser;

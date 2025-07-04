@@ -5,12 +5,16 @@ import { Injectable } from '@nestjs/common';
 export class MailService {
   constructor(private readonly mailService: MailerService) {}
 
-  async sendMail(to: string, subject: string, text: string) {
+  async sendMail(to: string, subject: string, regCode: string, url: string) {
     try {
       await this.mailService.sendMail({
         to,
         subject,
-        text,
+        template: './welcome',
+        context: {
+          registrationCode: regCode,
+          url,
+        },
       });
     } catch (error) {
       console.log('Error al enviar correo', error);
