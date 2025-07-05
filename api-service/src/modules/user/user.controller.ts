@@ -11,10 +11,16 @@ export class UserController {
     return this.userService.createUser(newUser);
   }
 
+  @Post('confirm')
+  confirmUser(@Body() user: UserDto) {
+    return this.userService.confirmUser(user);
+  }
+
   @Post('login')
   loginUser(@Body() loginUser: UserDto) {
     return this.userService.loginUser(loginUser);
   }
+
   @Get()
   getUser() {
     return this.userService.getUser();

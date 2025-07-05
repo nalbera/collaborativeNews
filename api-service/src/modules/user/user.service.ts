@@ -81,6 +81,13 @@ export class UserService {
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
 
+      if (!userFound.active) {
+        throw new HttpException(
+          'The user has not been activated',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
       const userPayload = {
         subscribe: userFound.id,
         id: userFound.id,
@@ -107,6 +114,60 @@ export class UserService {
       );
     }
   }
+
+  async confirmUser(user: UserDto) {
+    try {
+      const userFound = await this.userRepository.findOne({
+        where: {
+          email: user.email,
+        },
+      });
+
+      if (!userFound) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (userFound.registrationCode !== user.registrationCode) {
+        throw new HttpException(
+          'The registration code does not match',
+          HttpStatus.CONTENT_DIFFERENT,
+        );
+      }
+
+      const userModified = await this.userRepository.update(
+        { email: user.email },
+        {
+          active: true,
+          registrationCode: '',
+        },
+      );
+
+      if (userModified.affected === 0) {
+        throw new HttpException(
+          'An error occurred while trying to modify',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        message: 'The user has been successfully activated',
+      };
+    } catch (error: unknown) {
+      console.log(error);
+      let errorMessage = 'An error ocurred';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: errorMessage,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   getUser() {
     return 'Get user';
   }
