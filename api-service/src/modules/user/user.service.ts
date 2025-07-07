@@ -8,6 +8,7 @@ import { User } from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
 import { UserDto } from './dto/user-dto.dto';
 import { MailService } from '../mail/mail.service';
+import { IUser } from './user.interface';
 
 dotenvConfig({ path: '.env.development' });
 
@@ -168,7 +169,13 @@ export class UserService {
     }
   }
 
-  getUser() {
-    return 'Get user';
+  async getUser(user: IUser) {
+    const userFound = await this.userRepository.findOne({
+      where: {
+        email: user.email,
+      },
+    });
+
+    return userFound;
   }
 }
