@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './modules/user/user.module';
 import { NewsModule } from './modules/news/news.module';
 import { VotesModule } from './modules/votes/votes.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 dotenvConfig({ path: '.env.development' });
 
@@ -29,6 +30,8 @@ dotenvConfig({ path: '.env.development' });
     UserModule,
     NewsModule,
     VotesModule,
+    NewsModule,
+    CategoriesModule,
   ],
   controllers: [],
   providers: [],
