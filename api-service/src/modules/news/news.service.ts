@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { NewsDto } from './dto/news-dto.dto';
 import { User } from 'src/entities/users.entity';
 import { Categories } from 'src/entities/categories.entity';
+import { ErrorManager } from 'src/errors/error.manager';
 
 @Injectable()
 export class NewsService {
@@ -50,6 +51,10 @@ export class NewsService {
       };
     } catch (error) {
       console.log(error);
+      if (error instanceof Error) {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw ErrorManager.handleError(error.message);
+      }
     }
   }
 }
