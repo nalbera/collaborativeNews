@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as randomString from 'randomstring';
@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { UserDto } from './dto/user-dto.dto';
 import { MailService } from '../mail/mail.service';
 import { IUser } from './user.interface';
+import { ErrorManager } from 'src/errors/error.manager';
 
 dotenvConfig({ path: '.env.development' });
 
@@ -20,7 +21,7 @@ export class UserService {
     private mailService: MailService,
   ) {}
 
-  async createUser(user: UserDto): Promise<User> {
+  async createUser(user: UserDto): Promise<User | undefined> {
     try {
       const userFound = await this.userRepository.find({
         where: {
@@ -29,7 +30,10 @@ export class UserService {
       });
 
       if (userFound.length > 0) {
-        throw new HttpException('User already exists', HttpStatus.CONFLICT);
+        throw new ErrorManager({
+          type: 'CONFLICT',
+          message: 'User already exists',
+        });
       }
 
       const encryptedPassword = await bcrypt.hash(user.password, 10);
@@ -49,22 +53,15 @@ export class UserService {
       );
 
       return newUser;
-    } catch (error: unknown) {
-      let errorMessage = 'An error occurred';
+    } catch (error) {
       if (error instanceof Error) {
-        errorMessage = error.message;
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw ErrorManager.handleError(error.message);
       }
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: errorMessage,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
     }
   }
 
-  async loginUser(user: UserDto): Promise<object> {
+  async loginUser(user: UserDto): Promise<object | undefined> {
     try {
       const userFound = await this.userRepository.findOne({
         where: {
@@ -79,14 +76,17 @@ export class UserService {
       }
 
       if (!userFound || !validPassword) {
-        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+        throw new ErrorManager({
+          type: 'UNAUTHORIZED',
+          message: 'Invalid credentials',
+        });
       }
 
       if (!userFound.active) {
-        throw new HttpException(
-          'The user has not been activated',
-          HttpStatus.UNAUTHORIZED,
-        );
+        throw new ErrorManager({
+          type: 'UNAUTHORIZED',
+          message: 'The user has not been activated',
+        });
       }
 
       const userPayload = {
@@ -101,18 +101,11 @@ export class UserService {
         message: 'User logged in successfully',
         token,
       };
-    } catch (error: unknown) {
-      let errorMessage = 'An error occurred';
+    } catch (error) {
       if (error instanceof Error) {
-        errorMessage = error.message;
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw ErrorManager.handleError(error.message);
       }
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: errorMessage,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
     }
   }
 
@@ -125,14 +118,17 @@ export class UserService {
       });
 
       if (!userFound) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'User not found',
+        });
       }
 
       if (userFound.registrationCode !== user.registrationCode) {
-        throw new HttpException(
-          'The registration code does not match',
-          HttpStatus.CONTENT_DIFFERENT,
-        );
+        throw new ErrorManager({
+          type: 'CONTENT_DIFFERENT',
+          message: 'The registration code does not match',
+        });
       }
 
       const userModified = await this.userRepository.update(
@@ -144,28 +140,20 @@ export class UserService {
       );
 
       if (userModified.affected === 0) {
-        throw new HttpException(
-          'An error occurred while trying to modify',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'An error occurred while trying to modify',
+        });
       }
 
       return {
         message: 'The user has been successfully activated',
       };
-    } catch (error: unknown) {
-      console.log(error);
-      let errorMessage = 'An error ocurred';
+    } catch (error) {
       if (error instanceof Error) {
-        errorMessage = error.message;
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw ErrorManager.handleError(error.message);
       }
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: errorMessage,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
     }
   }
 
