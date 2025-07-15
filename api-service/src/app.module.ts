@@ -6,6 +6,8 @@ import { UserModule } from './modules/user/user.module';
 import { NewsModule } from './modules/news/news.module';
 import { VotesModule } from './modules/votes/votes.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 dotenvConfig({ path: '.env.development' });
 
@@ -26,6 +28,10 @@ dotenvConfig({ path: '.env.development' });
       global: true,
       signOptions: { expiresIn: '1d' },
       secret: process.env.JWT_SECRET,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/static',
     }),
     UserModule,
     NewsModule,
